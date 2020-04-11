@@ -1,26 +1,26 @@
-from flask import Flask, request
+from flask import Flask, request, Blueprint
 from bs4 import BeautifulSoup
 import requests
 
+site = Blueprint('site', __name__)
 
-
-app = Flask(__name__)
-
-@app.route('/',methods=['POST'])
+@site.route('/',methods=['POST'])
 def get_name():
+    from scrapper.datebase import db
+    from scrapper.models import Link
+
     name = request.json
+    print(name)
     for url in name["urls"]:
         content = requests.get(url)
+        print(content)
         soup = BeautifulSoup(content.text, 'html.parser')
         for link in soup.find_all('a'):
-            print(link.get('href'))
+            new_link = Link(page=url, link= link.get('href'))
+            db.session.add(new_link)
+            db.session.commit()
 
-    # content = requests.get(name["url"])
-    # import pdb; pdb.set_trace()
+
 
     return "ok"
 
-# {"urls": ["http://onet.pl", "http://google.pl"]}
-
-if __name__ == '__main__':
-    app.run(debug=True)

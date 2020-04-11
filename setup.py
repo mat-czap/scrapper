@@ -42,6 +42,8 @@ setup(
         'SQLAlchemy',
         'beautifulsoup4',
         'requests',
+        'celery',
+        'celery[redis]',
 
 
 
