@@ -46,11 +46,8 @@ def scrappe_url(self, url):
     except Exception as exc:
         raise self.retry(exc=exc)
 
-
     soup = BeautifulSoup(content.text, 'html.parser')
     for link in soup.find_all('a'):
         new_link = Link(page=url, link=link.get('href'))
-
         db.session.add(new_link)
         db.session.commit()
-
