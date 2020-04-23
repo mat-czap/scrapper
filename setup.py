@@ -36,19 +36,6 @@ setup(
     # Packages and depencies
     package_dir={'': 'src'},
     packages=find_packages('src'),
-    install_requires=[
-        'Flask',
-        'Flask-SQLAlchemy==2.4.1',
-        'SQLAlchemy',
-        'beautifulsoup4',
-        'requests',
-        'celery',
-        'celery[redis]',
-
-
-
-
-    ],
     extras_require={
         'dev': [
             'manuel',

@@ -1,5 +1,22 @@
 version: '3.3'
 services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - redis
+    entrypoint: python /app/src/scrapper/wsgi.py
+
+  celery:
+    build: .
+    depends_on:
+      - db
+      - redis
+    entrypoint: celery worker -l info -A scrapper.tasks.celery_app --concurrency=10
+
+
   db:
     image: mysql:5.7
     restart: always
@@ -23,6 +40,7 @@ services:
 
   redis:
     image: redis:4.0.5-alpine
+
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
@@ -34,3 +52,8 @@ services:
 volumes:
   my-db:
   redis-data:
+#  web:
+#
+#networks:
+#  default:
+#    external: true
