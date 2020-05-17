@@ -19,7 +19,6 @@ def make_celery(app):
                 return self.run(*args, **kwargs)
 
     celery.Task = ContextTask
-
     return celery
 
 
@@ -33,8 +32,6 @@ class StatusCode500Error(Exception):
 
 @celery_app.task(bind=True)
 def scrappe_url(self, url):
-    if "http://" not in url:
-        url="http://"+url
 
     try:
         content = requests.get(url)
@@ -54,4 +51,3 @@ def scrappe_url(self, url):
         new_link = Link(page=url, link=link.get('href'))
         db.session.add(new_link)
         db.session.commit()
-

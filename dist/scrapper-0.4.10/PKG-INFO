@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: scrapper
+Version: 0.4.10
+Summary: Creates the skeleton of your Python project.
+Home-page: https://github.com/fabiommendes/python-boilerplate
+Author: Fábio Macêdo Mendes
+Author-email: czapranski.mateusz@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries
+Provides-Extra: dev

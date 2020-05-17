@@ -3,19 +3,35 @@ services:
   web:
     build: .
     ports:
-      - "5000:5000"
+      #Z MOJEGO LOCALHOSTU NA PORT KONTENERA
+      - "5001:5000"
     depends_on:
       - db
       - redis
-    entrypoint: python /app/src/scrapper/wsgi.py
+    entrypoint: python -u /app/src/scrapper/wsgi.py
+    environment:
+      - APP_MODE=/app/config.py
+      - PYTHONUNBUFFERED=1
+      - PYTHONIOENCODING=UTF-8
+    volumes:
+      - /home/mat/PycharmProjects/scrapper/config/configProduction.py:/app/config.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+#      start_period: 40s
 
   celery:
     build: .
     depends_on:
       - db
       - redis
+    environment:
+      - APP_MODE=/app/config.py
     entrypoint: celery worker -l info -A scrapper.tasks.celery_app --concurrency=10
-
+    volumes:
+    - /home/mat/PycharmProjects/scrapper/config/configProduction.py:/app/config.py
 
   db:
     image: mysql:5.7
@@ -38,6 +54,7 @@ services:
     volumes:
       - my-db:/var/lib/mysql
 
+
   redis:
     image: redis:4.0.5-alpine
 
@@ -46,6 +63,27 @@ services:
       - redis-data:/data
     ports:
       - "6379:6379"
+
+  prom:
+    image: quay.io/prometheus/prometheus:v2.0.0
+    volumes:
+      - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml
+    command: "--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus"
+    ports:
+      - 9090:9090
+    depends_on:
+      - exporter
+  exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+  #    network_mode: host
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prom
 
 
 # Names our volume
