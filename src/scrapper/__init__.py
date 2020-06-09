@@ -2,6 +2,10 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from prometheus_flask_exporter import PrometheusMetrics
 from scrapper.views.health import health
+import pika
+
+from flask.ext.pika import Pika as FPika
+
 
 
 db = SQLAlchemy()
@@ -16,10 +20,18 @@ def create_app():
     metrics.init_app(app)
     metrics.info('app_info', 'Application info', version='1.0.3')
     app.config.from_envvar('APP_MODE')
-    app.config.update(
-        CELERY_BROKER_URL='redis://scrapper_redis_1:6379/0',
-        CELERY_RESULT_BACKEND='redis://scrapper_redis_1:6379/0',
-    )
+    print(app.config['RABBITMQ_URL'])
+
+    fpika = Fpika()
+    fpika.init_app(app)
+
+    credentials = pika.PlainCredentials('guest', 'guest')
+    parameters = pika.ConnectionParameters('rabbitmq', 5672, '/', credentials)
+
+    connection = pika.BlockingConnection(parameters)
+    channel = connection.channel()
+    channel.queue_declare(queue='hello')
+
 
     with app.app_context():
         import scrapper.models
@@ -29,4 +41,5 @@ def create_app():
         from scrapper.views.server import site
         app.register_blueprint(site)
         app.register_blueprint(health)
+
         return app

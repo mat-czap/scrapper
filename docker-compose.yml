@@ -8,7 +8,8 @@ services:
     depends_on:
       - db
       - redis
-    entrypoint: python -u /app/src/scrapper/wsgi.py
+      - rabbitmq
+    entrypoint: gunicorn scrapper.wsgi
     environment:
       - APP_MODE=/app/config.py
       - PYTHONUNBUFFERED=1
@@ -22,16 +23,12 @@ services:
       retries: 3
 #      start_period: 40s
 
-  celery:
-    build: .
-    depends_on:
-      - db
-      - redis
-    environment:
-      - APP_MODE=/app/config.py
-    entrypoint: celery worker -l info -A scrapper.tasks.celery_app --concurrency=10
-    volumes:
-    - /home/mat/PycharmProjects/scrapper/config/configProduction.py:/app/config.py
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
 
   db:
     image: mysql:5.7
