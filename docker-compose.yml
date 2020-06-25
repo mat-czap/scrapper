@@ -9,7 +9,7 @@ services:
       - db
       - redis
       - rabbitmq
-    entrypoint: gunicorn scrapper.wsgi
+    command: bash -c "sleep 15;gunicorn -b 0.0.0.0:5000 scrapper.wsgi"
     environment:
       - APP_MODE=/app/config.py
       - PYTHONUNBUFFERED=1
@@ -51,7 +51,6 @@ services:
     volumes:
       - my-db:/var/lib/mysql
 
-
   redis:
     image: redis:4.0.5-alpine
 
@@ -60,7 +59,6 @@ services:
       - redis-data:/data
     ports:
       - "6379:6379"
-
   prom:
     image: quay.io/prometheus/prometheus:v2.0.0
     volumes:

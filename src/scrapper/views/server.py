@@ -1,24 +1,29 @@
-from flask import request, Blueprint
+from http import HTTPStatus
+
+import pika
+from flask import request, Blueprint, current_app
+
+from scrapper import rabbit_context
+from scrapper.tasks import print_tasks
 
 site = Blueprint('site', __name__)
-
-
 
 @site.route('/',methods=['POST'])
 def get_name():
     # from scrapper.tasks import scrappe_url
-    name = request.json
-    print(name)
+    payload = request.json
+    # print(name)
+    connection = rabbit_context(current_app.config)
+    channel = connection.channel()
 
-    # channel.basic_publish(exchange='',
-    #                       routing_key='hello',
-    #                       body=message)
-    # print(" [x] Sent %r" % message)
-    #
-    # for url in name["urls"]:
-    #     # celery_app.send_task("scrapper.tasks.scrappe_url", (url,))
-    # #     # scrappe_url.delay(url)
-    return "ok"
+    for url in payload["urls"]:
+        channel.basic_publish(exchange='',
+                              routing_key='hello',
+                              body=url)
+        print(" [x] Sent %r" % url)
+
+    return "ok", HTTPStatus.ACCEPTED
+
 
 
 
