@@ -53,16 +53,14 @@ channel.exchange_declare(exchange='logs', exchange_type='topic')
 result = channel.queue_declare(queue='', exclusive=True)
 queue_name = result.method.queue
 
-
-channel.queue_bind(exchange='logs', queue=queue_name, routing_key="#")
-
+channel.queue_bind(exchange='logs', queue=queue_name, routing_key="fo.*")
 
 # channel.queue_declare(queue='hello', durable=True)
 print(' [*] Waiting for messages. To exit press CTRL+C')
 
 
 def callback(ch, method, properties, body):
-    time.sleep(10)
+    time.sleep(40)
     scrappe_url(body)
     print(" [x] Done")
     ch.basic_ack(delivery_tag=method.delivery_tag)

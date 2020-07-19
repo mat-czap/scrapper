@@ -2,8 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from prometheus_flask_exporter import PrometheusMetrics
 
-from scrapper.rabbitFactory import rabbit_context
-from scrapper.tasks import print_tasks
+from scrapper.rabbitFactory import rabbit_connection_factory
+
 from scrapper.views.health import health
 import pika
 
@@ -20,11 +20,13 @@ def create_app():
     metrics.info('app_info', 'Application info', version='1.0.3')
     app.config.from_envvar('APP_MODE')
 
-    connection = rabbit_context(app.config)
-    channel = connection.channel()
-    channel.queue_declare(queue='hello')
+    print(app.config.get("RABBITMQ_URL"))
 
-    print_tasks()
+    connection = rabbit_connection_factory(app.config.get("RABBITMQ_URL"))
+    channel = connection.channel()
+    channel.exchange_declare(exchange='logs', exchange_type='topic')
+    # channel.queue_declare(queue='hello', durable=True)
+
 
     with app.app_context():
         import scrapper.models

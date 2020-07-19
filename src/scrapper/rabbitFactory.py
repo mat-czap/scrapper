@@ -1,7 +1,7 @@
+from typing import Dict
 import pika
 
-
-def rabbit_context(config):
-    parameters = pika.URLParameters(config['RABBITMQ_URL'])
+def rabbit_connection_factory(rabbitMQ_URL: str):
+    parameters = pika.URLParameters(rabbitMQ_URL)
     connection = pika.BlockingConnection(parameters)
     return connection

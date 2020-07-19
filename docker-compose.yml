@@ -3,11 +3,10 @@ services:
   web:
     build: .
     ports:
-      #Z MOJEGO LOCALHOSTU NA PORT KONTENERA
+      #LEWA Z MOJEGO LOCALHOSTU,PRAWA PORT KONTENERA
       - "5001:5000"
     depends_on:
       - db
-      - redis
       - rabbitmq
     command: bash -c "sleep 15;gunicorn -b 0.0.0.0:5000 scrapper.wsgi"
     environment:
@@ -22,6 +21,23 @@ services:
       timeout: 10s
       retries: 3
 #      start_period: 40s
+  consumer1:
+    build: .
+    depends_on:
+      - db
+      - rabbitmq
+    command: bash -c "python /app/config/converter_py_to_json.py && python /app/src/scrapper/tasks.py"
+    environment:
+      - APP_MODE=/app/configProduction.json
+
+  consumer2:
+    build: .
+    depends_on:
+      - db
+      - rabbitmq
+    command: bash -c "python /app/config/converter_py_to_json.py && python /app/src/scrapper/task2.py"
+    environment:
+      - APP_MODE=/app/configProduction.json
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -29,7 +45,6 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
-
   db:
     image: mysql:5.7
     restart: always
@@ -51,14 +66,7 @@ services:
     volumes:
       - my-db:/var/lib/mysql
 
-  redis:
-    image: redis:4.0.5-alpine
 
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - redis-data:/data
-    ports:
-      - "6379:6379"
   prom:
     image: quay.io/prometheus/prometheus:v2.0.0
     volumes:
@@ -80,13 +88,6 @@ services:
     depends_on:
       - prom
 
-
 # Names our volume
 volumes:
   my-db:
-  redis-data:
-#  web:
-#
-#networks:
-#  default:
-#    external: true
