@@ -1,4 +1,4 @@
-from scrapper.plays import show_range
+from scrapper import show_range
 
 
 class TestStringMethods:

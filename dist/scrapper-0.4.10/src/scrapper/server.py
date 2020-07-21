@@ -5,7 +5,7 @@ site = Blueprint('site', __name__)
 @site.route('/',methods=['POST'])
 def get_name():
     # from scrapper.tasks import scrappe_url
-    from scrapper.tasks import celery_app
+    from scrapper import celery_app
     name = request.json
     print(name)
     for url in name["urls"]:

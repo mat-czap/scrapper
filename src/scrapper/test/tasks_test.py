@@ -3,8 +3,8 @@ from unittest.mock import PropertyMock
 
 import pytest
 
-from scrapper.models import Link
-from scrapper.tasks import scrappe_url
+from scrapper import Link
+from scrapper import scrappe_url
 
 @mock.patch("requests.get")
 @pytest.mark.parametrize(

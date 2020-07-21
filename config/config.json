@@ -1,0 +1,5 @@
+{
+  "dev": "config.development.json",
+  "prod": "config.production.json",
+  "test": "config.test.json"
+}

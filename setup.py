@@ -1,9 +1,6 @@
 # -*- coding: utf8 -*-
 #
-# This file were created by Python Boilerplate. Use Python Boilerplate to start
-# simple, usable and best-practices compliant Python projects.
-#
-# Learn more about it at: http://github.com/fabiommendes/python-boilerplate/
+
 #
 
 import os
@@ -19,7 +16,7 @@ setup(
     # Basic info
     name='scrapper',
     version=version,
-    author='Fábio Macêdo Mendes',
+    author='Mateusz Czaprański',
     author_email='czapranski.mateusz@gmail.com',
     url='https://github.com/fabiommendes/python-boilerplate',
     description='Creates the skeleton of your Python project.',

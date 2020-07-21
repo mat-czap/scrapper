@@ -1,7 +1,7 @@
 import pytest
 
 from scrapper import db
-from scrapper.wsgi import app
+from scrapper import app
 
 
 @pytest.fixture

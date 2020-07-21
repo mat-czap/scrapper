@@ -21,6 +21,7 @@ services:
       timeout: 10s
       retries: 3
 #      start_period: 40s
+
   consumer1:
     build: .
     depends_on:
@@ -29,16 +30,14 @@ services:
     command: bash -c "python /app/config/converter_py_to_json.py && python /app/src/scrapper/tasks.py"
     environment:
       - APP_MODE=/app/configProduction.json
-
   consumer2:
     build: .
     depends_on:
       - db
       - rabbitmq
-    command: bash -c "python /app/config/converter_py_to_json.py && python /app/src/scrapper/task2.py"
+    command: bash -c "python /app/src/scrapper/consumer2.py"
     environment:
-      - APP_MODE=/app/configProduction.json
-
+      - CONFIG_SRC=/app/config/config.${PROJECT_MODE}.json
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq

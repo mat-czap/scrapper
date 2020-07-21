@@ -72,4 +72,4 @@ channel.start_consuming()
 #         # new_link = Link(page=url, link=link.get('href'))
 #         # db.session.add(new_link)
 #         # db.session.commit()
-#
+

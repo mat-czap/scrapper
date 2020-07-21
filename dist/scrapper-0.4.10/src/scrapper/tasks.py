@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
 import requests
-from scrapper.models import Link
+from scrapper import Link
 from scrapper import db
 from celery import Celery
-from scrapper.wsgi import app
+from scrapper import app
 
 def make_celery(app):
     celery = Celery(

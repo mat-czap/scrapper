@@ -21,6 +21,6 @@ def create_app():
         db.create_all()
 
         # Include our Routes
-        from scrapper.views.server import site
+        from scrapper import site
         app.register_blueprint(site)
         return app

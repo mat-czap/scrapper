@@ -2,17 +2,16 @@ from http import HTTPStatus
 
 import pika
 from flask import request, Blueprint, current_app, app
-
 from scrapper import rabbit_connection_factory
 
 site = Blueprint('site', __name__)
-
 
 @site.route('/', methods=['POST'])
 def get_name():
     # from scrapper.tasks import scrappe_url
     payload = request.json
     connection = rabbit_connection_factory(current_app.config.get("RABBITMQ_URL"))
+    # job flask-sqlalchemy
     print(current_app.config)
     channel = connection.channel()
 
@@ -42,5 +41,5 @@ def get_name():
         channel.basic_publish(exchange='logs',
                               routing_key=f"{var}",
                               body=url)
-        print(" [x] Sent %s with routing_key %s" % (url, var))
+        print(" [x] Sent %s with routing_key: %s" % (url, var))
     return "ok", HTTPStatus.ACCEPTED
