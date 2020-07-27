@@ -19,8 +19,6 @@ def create_app():
     metrics.info('app_info', 'Application info', version='1.0.3')
     app.config.from_envvar('APP_MODE')
 
-    print(app.config)
-
     connection = rabbit_connection_factory(app.config.get("RABBITMQ_URL"))
     channel = connection.channel()
     channel.exchange_declare(exchange='logs', exchange_type='topic')
