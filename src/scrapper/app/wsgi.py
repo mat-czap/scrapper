@@ -1,4 +1,4 @@
-from scrapper import create_app
+from scrapper.app.server import create_app
 
 application = create_app()
 

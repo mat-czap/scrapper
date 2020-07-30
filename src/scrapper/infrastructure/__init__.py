@@ -1,0 +1,1 @@
+from scrapper.infrastructure.rabbitFactory import rabbit_connection_factory

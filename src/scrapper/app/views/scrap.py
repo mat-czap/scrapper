@@ -2,7 +2,8 @@ from http import HTTPStatus
 
 import pika
 from flask import request, Blueprint, current_app, app
-from scrapper import rabbit_connection_factory
+from scrapper.infrastructure import rabbit_connection_factory
+from scrapper.infrastructure.scrapper_repository import ScrapperRepository
 
 site = Blueprint('site', __name__)
 
@@ -11,6 +12,10 @@ def get_name():
     # from scrapper.tasks import scrappe_url
     payload = request.json
     connection = rabbit_connection_factory(current_app.config.get("RABBITMQ_URL"))
+    repository = ScrapperRepository(current_app.config["SQLALCHEMY_DATABASE_URI"])
+    repository.create_batch()
+
+
     # job flask-sqlalchemy
     print(current_app.config)
     channel = connection.channel()
@@ -42,4 +47,6 @@ def get_name():
                               routing_key=f"{var}",
                               body=url)
         print(" [x] Sent %s with routing_key: %s" % (url, var))
+
+
     return "ok", HTTPStatus.ACCEPTED

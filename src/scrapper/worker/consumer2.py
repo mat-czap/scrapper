@@ -3,7 +3,7 @@ import os
 import time
 
 
-from scrapper import db, rabbit_connection_factory
+from scrapper.infrastructure import db, rabbit_connection_factory
 #
 from bs4 import BeautifulSoup
 import requests

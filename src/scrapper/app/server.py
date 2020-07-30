@@ -1,11 +1,14 @@
 from flask import Flask
 
+import sqlalchemy as db
+from sqlalchemy import orm
+
+from scrapper.infrastructure.models import base
+
+
 from prometheus_flask_exporter import PrometheusMetrics
 
 from scrapper.infrastructure.rabbitFactory import rabbit_connection_factory
-
-
-
 
 metrics = PrometheusMetrics(app=None)
 
@@ -13,7 +16,6 @@ def create_app():
     """Initialize the core application."""
 
     app = Flask(__name__, instance_relative_config=False)
-
 
     metrics.init_app(app)
     metrics.info('app_info', 'Application info', version='1.0.3')
@@ -24,6 +26,11 @@ def create_app():
     channel.exchange_declare(exchange='logs', exchange_type='topic')
     # channel.queue_declare(queue='hello', durable=True)
 
+
+    engine = db.create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+    base.metadata.bind = engine
+    session = orm.scoped_session(orm.sessionmaker())(bind=engine)
+    base.metadata.create_all()
 
     with app.app_context():
         import scrapper.infrastructure.models
