@@ -1,27 +1,28 @@
 import json
 import os
+import pickle
 import time
 
-from scrapper import db, rabbit_connection_factory
-#
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
 
+from scrapper.infrastructure import rabbit_connection_factory
+from scrapper.infrastructure.scrapper_repository import ScrapperRepository
+from scrapper.worker.Worker import Worker
 
-# from flask import current_app
-#
-# from scrapper.models import Link
-# from scrapper.wsgi import app
 
 class StatusCode500Error(Exception):
     pass
 
 
-def scrappe_url(url):
-    url = url.decode("utf-8")
+def scrap_by_url(package):
+    url, batch_id = package
+    print(url, batch_id)
 
-    if "http://" not in url:
-        url = "http://" + url
+    # if "http://" not in url:
+    #     url = "http://" + url
+
+    content = str()
     try:
         content = requests.get(url)
 
@@ -33,11 +34,14 @@ def scrappe_url(url):
 
     soup = BeautifulSoup(content.text, 'html.parser')
 
-    with open('scrapped_records.txt', 'a') as file:
-        for link in soup.find_all('a'):
-            file.write(str(link.get('href')) + '\n')
+    def input_to_db(link):
+        link if link is None else link.encode('utf-8')
 
+    for link in soup.find_all('a'):
+        repository = ScrapperRepository(config["SQLALCHEMY_DATABASE_URI"])
+        repository.add_link(url, input_to_db(link.get('href')), batch_id)
 
+# todo put config to separate file
 config_location = os.environ.get("APP_MODE")
 
 with open(config_location) as config_file:
@@ -53,25 +57,33 @@ channel.exchange_declare(exchange='logs', exchange_type='topic')
 result = channel.queue_declare(queue='', exclusive=True)
 queue_name = result.method.queue
 
-
 channel.queue_bind(exchange='logs', queue=queue_name, routing_key="#")
-
 
 # channel.queue_declare(queue='hello', durable=True)
 print(' [*] Waiting for messages. To exit press CTRL+C')
 
 
+repository = ScrapperRepository(config["SQLALCHEMY_DATABASE_URI"])
+
+
+def scrap_job(body, repository):
+
+    worker = Worker(body, repository)
+    scrapped_links = scrap_by_url(Worker.get_params_to_scrap)
+
+    if scrapped_links["status"] == "ok":
+        worker.commit(scrapped_links)
+    else:
+        return "Worker failed scrapping"
+
+
 def callback(ch, method, properties, body):
-    time.sleep(10)
-    scrappe_url(body)
+    time.sleep(1)
+    scrap_job(body, repository)
     print(" [x] Done")
     ch.basic_ack(delivery_tag=method.delivery_tag)
+
 
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue=queue_name, on_message_callback=callback)
 channel.start_consuming()
-
-#         # new_link = Link(page=url, link=link.get('href'))
-#         # db.session.add(new_link)
-#         # db.session.commit()
-#

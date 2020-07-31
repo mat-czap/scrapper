@@ -24,12 +24,14 @@ class Batch(base):
 
 
 class Link(base):
+
     __tablename__ = "links"
     id = db.Column(db.Integer, primary_key=True)
     page = db.Column(db.String(80), nullable=False)
-    link = db.Column(db.String(2000), nullable=False)
+    link = db.Column(db.String(2000), default='none')
     batch_id = db.Column(db.Integer, db.ForeignKey('batch.id'))
     batch = relationship("Batch", back_populates="links")
+
     def __repr__(self):
         return f"link: {self.link}"
 

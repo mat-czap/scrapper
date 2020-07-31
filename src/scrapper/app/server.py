@@ -5,7 +5,6 @@ from sqlalchemy import orm
 
 from scrapper.infrastructure.models import base
 
-
 from prometheus_flask_exporter import PrometheusMetrics
 
 from scrapper.infrastructure.rabbitFactory import rabbit_connection_factory
@@ -36,7 +35,8 @@ def create_app():
         import scrapper.infrastructure.models
 
         # Include our Routes
-        from scrapper.app.views import site, health
+        from scrapper.app.views import site, health, worker
         app.register_blueprint(site)
         app.register_blueprint(health)
+        app.register_blueprint(worker)
         return app
