@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 import time
 import requests
 from bs4 import BeautifulSoup
@@ -69,15 +70,19 @@ print(' [*] Waiting for messages. To exit press CTRL+C')
 
 
 repository = ScrapperRepository(config["SQLALCHEMY_DATABASE_URI"])
+
+
 worker = Worker(repository)
 
 
+
 def scrap_job(worker, body):
+    print(pickle.loads(body))
+    time.sleep(2)
     worker.set_data_from_queue(body)
     scrapping_input = worker.get_params_to_scrap()
     try:
         scrapped_links = scrap_by_url(scrapping_input)
-
     except Exception as ex:
         print("scrappJOB",ex)
 

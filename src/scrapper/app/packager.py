@@ -19,7 +19,7 @@ class Packager:
     """
 
     def __init__(self, payload):
-        self.nr_links = len(payload)
+        self.number_of_links = len(payload["urls"])
         self._realization = 0
 
     def _increase(self):
@@ -28,7 +28,7 @@ class Packager:
     def send(self, url: str, batch_id: int):
         self._increase()
         package = {"url": url, "batch_id": batch_id}
-        if self._realization == self.nr_links:
+        if self._realization == self.number_of_links:
             package["status"] = StatusPackage.END
             return pickle.dumps(package)
         else:

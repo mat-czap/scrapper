@@ -18,7 +18,6 @@ def get_name():
     packager = Packager(payload)
     channel = connection.channel()
     # todo put entire rabbitmq to class
-    # todo think about where should be located pickle
     # todo put logic to another file
     # topic type
     for url in payload["urls"]:

@@ -20,7 +20,12 @@ class ScrapperRepository:
     def add_link(self, page, link, batch_id):
         new_link = Link(link=link, page=page, batch_id=batch_id)
         self._session.add(new_link)
-        self._session.commit()
+        try:
+            self._session.commit()
+        except Exception as e:
+            self._session.rollback()
+            self._session.flush()
+            raise Exception
 
     def update_batch_finished(self, batch_id):
         retrieved_batch = self._session.query(Batch).filter(Batch.id == batch_id).first()
