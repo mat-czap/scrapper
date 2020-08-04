@@ -1,4 +1,6 @@
 import pickle
+from dataclasses import dataclass
+
 import requests
 from functools import wraps
 from scrapper.app.packager import StatusPackage
@@ -24,13 +26,19 @@ class DataMissing(Exception):
 #     return wrapper
 
 
+@dataclass
+class ScrappedData:
+    status: str
+    data: set
+
+
 class Worker:
     def __init__(self, repository):
-        # @todo define dataclass for _data
+    # def __init__(self, repository,scrap_strategy):
         self._data = 0
         self._repository = repository
 
-    def set_data_from_queue(self, body):
+    def set_data_from_queue(self, body: bytes):
         self._data = pickle.loads(body)
 
     def get_params_to_scrap(self):
@@ -42,30 +50,44 @@ class Worker:
         except DataMissing:
             print("_data in Worker instance is not declared.Use self.set_data_from_queue()")
 
-    def _add_links(self, scrapped_links):
-        for page in scrapped_links["data"]:
+    def _add_links(self, scrapped_links: ScrappedData) -> None:
+        for page in scrapped_links.data:
             try:
                 self._repository.add_link(self._data["url"], page, self._data["batch_id"])
             except Exception as e:
-                print(f"occurred problem with saving single link to db, it has been omitted : {page}")
+                print(f"Occurred problem with saving single link to db, it has been omitted : {page}")
                 continue
-        return "ok"
+        return
 
     def _update_batch(self):
         if self._data["status"] == StatusPackage.END:
-            self._repository.update_batch_finished(self._data["batch_id"])
+            self._repository.update_batch_status(self._data["batch_id"])
         else:
             pass
 
-    def _update_backend(self):
+    def _update_backend(self) -> None:
         try:
             result = requests.get('http://localhost:5001/batch')
-            print(result)
         except requests.ConnectionError as e:
             print(e)
 
-    def commit(self, scrapped_links):
+    def commit(self, scrapped_links: ScrappedData):
         self._add_links(scrapped_links)
         self._update_batch()
         # todo repair updating Flask backend
         # self._update_backend()
+
+    # def scrap_job(self,body: bytes):
+    #
+    #     self._set_data_from_queue(body)
+    #     scrapping_input = self._get_params_to_scrap()
+    #
+    #     try:
+    #         scrapped_links: ScrappedData = self._scrap_strategy(scrapping_input)
+    #         if scrapped_links.status == "ok":
+    #             worker.commit(scrapped_links)
+    #         else:
+    #             print("Worker failed scrapping")
+    #
+    #     except Exception as ex:
+    #         print("scrap_job: ", ex)

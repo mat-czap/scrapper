@@ -3,16 +3,11 @@ import os
 import time
 
 
-from scrapper.infrastructure import db, rabbit_connection_factory
+from scrapper.infrastructure import rabbit_connection_factory
 #
 from bs4 import BeautifulSoup
 import requests
 
-
-# from flask import current_app
-#
-# from scrapper.models import Link
-# from scrapper.wsgi import app
 
 class StatusCode500Error(Exception):
     pass

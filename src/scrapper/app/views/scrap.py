@@ -10,16 +10,13 @@ site = Blueprint('site', __name__)
 
 @site.route('/', methods=['POST'])
 def get_name():
-    # from scrapper.tasks import scrappe_url
-    connection = rabbit_connection_factory(current_app.config.get("RABBITMQ_URL"))
+    connection = rabbit_connection_factory(current_app.config["RABBITMQ_URL"])
     repository = ScrapperRepository(current_app.config["SQLALCHEMY_DATABASE_URI"])
+    channel = connection.channel()
     batch_id = repository.create_batch()
     payload = request.json
     packager = Packager(payload)
-    channel = connection.channel()
-    # todo put entire rabbitmq to class
-    # todo put logic to another file
-    # topic type
+
     for url in payload["urls"]:
         var = str()
         try:
@@ -37,5 +34,4 @@ def get_name():
         channel.basic_publish(exchange='logs',
                               routing_key=f"{var}",
                               body=packager.send(url, batch_id))
-
     return "ok", HTTPStatus.ACCEPTED

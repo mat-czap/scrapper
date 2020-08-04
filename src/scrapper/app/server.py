@@ -1,15 +1,12 @@
 from flask import Flask
-
 import sqlalchemy as db
 from sqlalchemy import orm
-
 from scrapper.infrastructure.models import base
-
 from prometheus_flask_exporter import PrometheusMetrics
-
 from scrapper.infrastructure.rabbitFactory import rabbit_connection_factory
 
 metrics = PrometheusMetrics(app=None)
+
 
 def create_app():
     """Initialize the core application."""
@@ -23,8 +20,6 @@ def create_app():
     connection = rabbit_connection_factory(app.config.get("RABBITMQ_URL"))
     channel = connection.channel()
     channel.exchange_declare(exchange='logs', exchange_type='topic')
-    # channel.queue_declare(queue='hello', durable=True)
-
 
     engine = db.create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
     base.metadata.bind = engine
@@ -32,9 +27,6 @@ def create_app():
     base.metadata.create_all()
 
     with app.app_context():
-        import scrapper.infrastructure.models
-
-        # Include our Routes
         from scrapper.app.views import site, health, worker
         app.register_blueprint(site)
         app.register_blueprint(health)
