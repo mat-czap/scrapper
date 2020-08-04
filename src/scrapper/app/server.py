@@ -28,7 +28,6 @@ def create_app():
 
     with app.app_context():
         from scrapper.app.views import site, health, worker
-        app.register_blueprint(site)
-        app.register_blueprint(health)
-        app.register_blueprint(worker)
+        for blueprint in [site, health, worker]:
+            app.register_blueprint(blueprint)
         return app

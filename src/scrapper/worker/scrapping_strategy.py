@@ -7,7 +7,7 @@ class StatusCode500Error(Exception):
     pass
 
 
-def scrap_by_url(url: str) -> ScrappedData:
+def strategy_1(url: str) -> ScrappedData:
     if "http://" not in url:
         url = "http://" + url
 
@@ -21,9 +21,7 @@ def scrap_by_url(url: str) -> ScrappedData:
         print("500 error")
 
     soup = BeautifulSoup(content.text, 'html.parser')
-
     scrapped_links: ScrappedData = ScrappedData(str(), set())
-
     try:
         for link in soup.find_all('a'):
             if link is not None:

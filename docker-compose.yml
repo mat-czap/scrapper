@@ -27,7 +27,7 @@ services:
     depends_on:
       - db
       - rabbitmq
-    command: bash -c "python /app/config/converter_py_to_json.py && python /app/src/scrapper/worker/tasks.py"
+    command: bash -c "python /app/config/converter_py_to_json.py && python /app/src/scrapper/worker/main.py"
     environment:
       - APP_MODE=/app/configProduction.json
 #  consumer2:
