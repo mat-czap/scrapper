@@ -1,27 +1,19 @@
 import pickle
 from dataclasses import dataclass
+from typing import Union
 import requests
 from scrapper.app.packager import StatusPackage
 
 
-class DataMissing(Exception):
+class DataMissingError(Exception):
     pass
 
-# Decorator for class method checking if _data is already populated.
-#
-# def data_checker(func):
-#     @wraps(func)
-#     def wrapper(self, *args, **kwargs):
-#         try:
-#             if self._data != 0:
-#                 return func(*args, **kwargs)
-#             else:
-#                 raise DataMissing
-#         except DataMissing:
-#             print("_data in Worker instance is not declared.Use self.set_data_from_queue()")
-#         return
-#
-#     return wrapper
+
+@dataclass
+class EncodedRawData:
+    url: str
+    batch_id: int
+    status: StatusPackage
 
 
 @dataclass
@@ -35,40 +27,41 @@ class Worker:
 
            1. Operating layer between QueueConsumer and scrapper_repository
            2. Deserializes data from queue
-           3. Informs Flask backend about finished Task
+           3. Informs Flask backend about finished Batch
            4. Applies scrapping_strategy
 
      """
 
     def __init__(self, repository, scraping_strategy):
-        self._data = 0
+        self._data: Union[EncodedRawData, int] = 0
         self._repository = repository
         self._scraping_strategy = scraping_strategy
 
-    def _set_data_from_queue(self, body: bytes):
-        self._data = pickle.loads(body)
+    def _set_data_from_queue(self, raw_data_from_queue: bytes):
+        deserialized_data = pickle.loads(raw_data_from_queue)
+        self._data = EncodedRawData(deserialized_data["url"], deserialized_data["batch_id"], deserialized_data["status"])
 
     def _get_params_to_scrap(self):
         try:
             if self._data != 0:
-                return self._data["url"]
+                return self._data.url
             else:
-                raise DataMissing
-        except DataMissing:
+                raise DataMissingError
+        except DataMissingError:
             print("_data in Worker instance is not declared.Use self.set_data_from_queue()")
 
     def _add_links(self, scrapped_links: ScrappedData):
         for page in scrapped_links.data:
             try:
-                self._repository.add_link(self._data["url"], page, self._data["batch_id"])
+                self._repository.add_link(self._data.url, page, self._data.batch_id)
             except Exception as e:
                 print(f"Occurred problem with saving single link to db, it has been omitted : {page}")
                 continue
         return
 
     def _update_batch(self):
-        if self._data["status"] == StatusPackage.END:
-            self._repository.update_batch_status(self._data["batch_id"])
+        if self._data.status == StatusPackage.END:
+            self._repository.update_batch_status(self._data.batch_id)
         else:
             pass
 
@@ -84,11 +77,10 @@ class Worker:
         # todo repair updating Flask backend
         # self._update_backend()
 
-    def scrap_job(self, body: bytes):
-        self._set_data_from_queue(body)
-        scrapping_input = self._get_params_to_scrap()
+    def scrap_job(self, raw_data_from_queue: bytes):
+        self._set_data_from_queue(raw_data_from_queue)
         try:
-            scrapped_links: ScrappedData = self._scraping_strategy(scrapping_input)
+            scrapped_links: ScrappedData = self._scraping_strategy(self._get_params_to_scrap())
             if scrapped_links.status == "ok":
                 self._commit(scrapped_links)
             else:
