@@ -1,7 +1,7 @@
 import sqlalchemy as db
-from sqlalchemy import orm
+from sqlalchemy import orm, update
 
-from scrapper.infrastructure.models import Batch, Link, Status
+from scrapper.infrastructure.models import Batch, Link, StatusPackage
 
 
 class ScrapperRepository:
@@ -17,12 +17,12 @@ class ScrapperRepository:
         self._session.commit()
         return batch.id
 
-    def add_link(self, page, link, batch_id) -> None:
+    def add_link(self, page, link, batch_id):
         new_link = Link(link=link, page=page, batch_id=batch_id)
         self._session.add(new_link)
         self._session.commit()
 
     def update_batch_finished(self, batch_id):
-        self._session.query(Batch).filter_by(id=batch_id).first().update({'status':Status.FINISHED})
+        retrieved_batch = self._session.query(Batch).filter(Batch.id == batch_id).first()
+        retrieved_batch.status = StatusPackage.FINISHED
         self._session.commit()
-

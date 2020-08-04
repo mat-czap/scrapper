@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 base = declarative_base()
 
 
-class Status(Enum):
+class StatusPackage(Enum):
     STARTED = 0
     FINISHED = 1
 
@@ -16,7 +16,7 @@ class Batch(base):
 
     __tablename__ = "batch"
     id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.Enum(Status), default=Status.STARTED)
+    status = db.Column(db.Enum(StatusPackage), default=StatusPackage.STARTED)
     links = relationship("Link", back_populates="batch")
 
     def __repr__(self):
@@ -34,6 +34,3 @@ class Link(base):
 
     def __repr__(self):
         return f"link: {self.link}"
-
-
-

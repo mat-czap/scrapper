@@ -1,31 +1,63 @@
 import pickle
 import requests
+from functools import wraps
+from scrapper.app.packager import StatusPackage
+
+
+class DataMissing(Exception):
+    pass
+
+#
+# def data_checker(func):
+#     @wraps(func)
+#     def wrapper(self, *args, **kwargs):
+#         try:
+#             if self._data is not None:
+#                 return func(*args, **kwargs)
+#             else:
+#                 raise DataMissing
+#         except DataMissing:
+#             print("_data in Worker instance is not declared.Use self.set_data_from_queue()")
+#         return
+#
+#     return wrapper
 
 
 class Worker:
-    def __init__(self, data, repository):
-        self._data = self._get_deserielized_data(data)
+    def __init__(self, repository):
+        # @todo określić typ dla _data
+        self._data = 0
         self._repository = repository
 
-    def _get_deserielized_data(self, raw_data):
-        return pickle.loads(raw_data)
+    def set_data_from_queue(self, body):
+        self._data = pickle.loads(body)
 
-    # todo return only 2 first params
     def get_params_to_scrap(self):
-        return self._data
-    # todo logic from tasks.py about adding to db links
+        try:
+            if self._data != 0:
+                return self._data["url"]
+            else:
+                raise DataMissing
+        except DataMissing:
+            print("_data in Worker instance is not declared.Use self.set_data_from_queue()")
+
     def _add_links(self, scrapped_links):
-        pass
+        for page in scrapped_links:
+            self._repository.add_link(self._data["url"], page, self._data["batch_id"])
+        return "ok"
 
     def _update_batch(self):
-        if len(self._data) == 2:
-            pass
-        else:
+        if self._data["status"] == StatusPackage.END:
             self._repository.update_batch_finished(self._data["batch_id"])
+        else:
+            pass
 
     def _update_backend(self):
-        status = requests.get('http://localhost:5001/batch')
-        print(status)
+        try:
+            result = requests.get('http://127.0.0.1:5001/batch', verify=False)
+            print(result)
+        except requests.ConnectionError as e:
+            print(e)
 
     def commit(self, scrapped_links):
         self._add_links(scrapped_links)

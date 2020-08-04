@@ -1,11 +1,23 @@
 import pickle
+from enum import Enum
 
 
 class PackagerBase:
     pass
 
 
+class StatusPackage(Enum):
+    PROCESSING = 0
+    END = 1
+
+
 class Packager:
+    """ Packager is responsible for:
+
+          1. Pass serialized info (in "package") for worker
+          2. Keep state of completion scrapped urls, in order to inform worker about last element
+    """
+
     def __init__(self, payload):
         self.nr_links = len(payload)
         self._realization = 0
@@ -13,10 +25,12 @@ class Packager:
     def _increase(self):
         self._realization += 1
 
-    def send(self, url, batch_id):
+    def send(self, url: str, batch_id: int):
         self._increase()
-        package = [url, batch_id]
+        package = {"url": url, "batch_id": batch_id}
         if self._realization == self.nr_links:
-            return pickle.dumps(package.append("end"))
+            package["status"] = StatusPackage.END
+            return pickle.dumps(package)
         else:
+            package["status"] = StatusPackage.PROCESSING
             return pickle.dumps(package)

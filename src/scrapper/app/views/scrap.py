@@ -1,7 +1,4 @@
 from http import HTTPStatus
-import pickle
-
-import pika
 from flask import request, Blueprint, current_app
 
 from scrapper.app.packager import Packager
@@ -14,13 +11,14 @@ site = Blueprint('site', __name__)
 @site.route('/', methods=['POST'])
 def get_name():
     # from scrapper.tasks import scrappe_url
-    payload = request.json
     connection = rabbit_connection_factory(current_app.config.get("RABBITMQ_URL"))
     repository = ScrapperRepository(current_app.config["SQLALCHEMY_DATABASE_URI"])
     batch_id = repository.create_batch()
+    payload = request.json
     packager = Packager(payload)
     channel = connection.channel()
-
+    # todo put entire rabbitmq to class
+    # todo think about where should be located pickle
     # todo put logic to another file
     # topic type
     for url in payload["urls"]:
@@ -37,12 +35,8 @@ def get_name():
         except Exception as ex:
             print(ex)
 
-        # Logic to send signal about last element
-
-        package = [url, batch_id,len(payload)]
-
         channel.basic_publish(exchange='logs',
                               routing_key=f"{var}",
-                              body=pickle.dumps(package))
+                              body=packager.send(url, batch_id))
 
     return "ok", HTTPStatus.ACCEPTED
