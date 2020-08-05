@@ -41,7 +41,7 @@ class Worker:
         deserialized_data = pickle.loads(raw_data_from_queue)
         self._data = EncodedRawData(deserialized_data["url"], deserialized_data["batch_id"], deserialized_data["status"])
 
-    def _get_params_to_scrap(self):
+    def _get_params_to_scrap(self) -> str:
         try:
             if self._data != 0:
                 return self._data.url

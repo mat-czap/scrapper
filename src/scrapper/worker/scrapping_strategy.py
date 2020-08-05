@@ -17,7 +17,7 @@ def strategy_1(url: str) -> ScrappedData:
         if content.status_code >= 500:
             raise StatusCode500Error
 
-    except StatusCode500Error as exc:
+    except StatusCode500Error:
         print("500 error")
 
     soup = BeautifulSoup(content.text, 'html.parser')
