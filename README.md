@@ -1,5 +1,5 @@
 # scrapper
-Flask service + docker-compose + rabbitmq + SqlAlchemy orm for Mysql db
+docker-compose[Flask service + rabbitmq + SqlAlchemy ORM for Mysql]
 
 
 curl for testing:
