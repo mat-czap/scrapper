@@ -1,5 +1,5 @@
 # scrapper
-Flask service for scrapping + docker-compose + rabbitmq + Mysql/Redis + Prometheus/Grafana
+Flask service + docker-compose + rabbitmq + SqlAlchemy orm for Mysql db
 
 
 curl for testing:
