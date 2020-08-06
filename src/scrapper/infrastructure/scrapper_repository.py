@@ -3,6 +3,10 @@ from sqlalchemy import orm
 from scrapper.infrastructure.models import Batch, Link, StatusPackage
 
 
+class EncodedError(Exception):
+    pass
+
+
 class ScrapperRepository:
 
     def __init__(self, mysql_connection: str):
@@ -24,9 +28,10 @@ class ScrapperRepository:
         except Exception as e:
             self._session.rollback()
             self._session.flush()
-            raise Exception
-
+            raise EncodedError
+    # extra status
     def update_batch_status(self, batch_id: int):
         retrieved_batch = self._session.query(Batch).filter(Batch.id == batch_id).first()
         retrieved_batch.status = StatusPackage.FINISHED
         self._session.commit()
+

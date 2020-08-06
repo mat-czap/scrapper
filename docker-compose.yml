@@ -8,6 +8,7 @@ services:
     depends_on:
       - db
       - rabbitmq
+#    command: ./wait-for-it.sh  rabbitmq:5672 -- gunicorn -b 0.0.0.0:5000 scrapper.app.wsgi
     command: bash -c "sleep 8;gunicorn -b 0.0.0.0:5000 scrapper.app.wsgi"
     environment:
       - APP_MODE=/app/config.py

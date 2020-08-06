@@ -7,4 +7,4 @@ worker = Blueprint('worker', __name__)
 @worker.route('/batch', methods=['GET'])
 def ready_batch():
     print("batch is already completed")
-    return HTTPStatus.OK
+    return "ok"

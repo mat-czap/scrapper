@@ -21,6 +21,7 @@ def strategy_1(url: str) -> ScrappedData:
         print("500 error")
 
     soup = BeautifulSoup(content.text, 'html.parser')
+    # how to improve line below?
     scrapped_links: ScrappedData = ScrappedData(str(), set())
     try:
         for link in soup.find_all('a'):

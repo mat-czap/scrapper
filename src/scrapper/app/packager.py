@@ -6,7 +6,7 @@ class StatusPackage(Enum):
     PROCESSING = 0
     END = 1
 
-
+# todo consider add dataclasses to package
 class Packager:
     """ Packager is responsible for:
 

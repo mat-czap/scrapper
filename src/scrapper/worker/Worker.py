@@ -1,8 +1,10 @@
+import functools
 import pickle
-from dataclasses import dataclass
-from typing import Union
 import requests
+from dataclasses import dataclass, field
+from typing import Optional, Set
 from scrapper.app.packager import StatusPackage
+from scrapper.infrastructure.scrapper_repository import EncodedError
 
 
 class DataMissingError(Exception):
@@ -18,10 +20,27 @@ class EncodedRawData:
 
 @dataclass
 class ScrappedData:
-    status: str
-    data: set
+    status: str = ""
+    data: Set[Optional[str]] = field(default_factory=set)
 
 
+def data_checker(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        self = args[0]
+        print(self._data)
+        try:
+            if self._data is not None:
+                return func(*args, **kwargs)
+            else:
+                raise DataMissingError
+        except DataMissingError:
+            print("_data in Worker instance is not declared.Use self.set_data_from_queue()")
+        return
+    return wrapper
+
+
+# todo convert into stateless class, pass result through methods.
 class Worker:
     """ Worker:
 
@@ -33,28 +52,32 @@ class Worker:
      """
 
     def __init__(self, repository, scraping_strategy):
-        self._data: Union[EncodedRawData, int] = 0
+        self._data: Optional[EncodedRawData] = None
         self._repository = repository
         self._scraping_strategy = scraping_strategy
 
     def _set_data_from_queue(self, raw_data_from_queue: bytes):
         deserialized_data = pickle.loads(raw_data_from_queue)
         self._data = EncodedRawData(deserialized_data["url"], deserialized_data["batch_id"], deserialized_data["status"])
+    # deserialize data return encoded raw data
 
+    @data_checker
     def _get_params_to_scrap(self) -> str:
         try:
-            if self._data != 0:
+            if self._data is not None:
                 return self._data.url
             else:
                 raise DataMissingError
         except DataMissingError:
             print("_data in Worker instance is not declared.Use self.set_data_from_queue()")
 
+    # todo change adding single link to adding entire batch within transaction. Inspect "bulk_save_objects"
+    @data_checker
     def _add_links(self, scrapped_links: ScrappedData):
         for page in scrapped_links.data:
             try:
                 self._repository.add_link(self._data.url, page, self._data.batch_id)
-            except Exception as e:
+            except EncodedError as e:
                 print(f"Occurred problem with saving single link to db, it has been omitted : {page}")
                 continue
         return
@@ -67,7 +90,9 @@ class Worker:
 
     def _update_backend(self):
         try:
-            result = requests.get('http://localhost:5001/batch')
+            # zczytywanie hosta i portu
+            result = requests.get('http://scrapper_web_1:5000/batch')
+            print(result)
         except requests.ConnectionError as e:
             print(e)
 
@@ -75,7 +100,7 @@ class Worker:
         self._add_links(scrapped_links)
         self._update_batch()
         # todo repair updating Flask backend
-        # self._update_backend()
+        self._update_backend()
 
     def scrap_job(self, raw_data_from_queue: bytes):
         self._set_data_from_queue(raw_data_from_queue)

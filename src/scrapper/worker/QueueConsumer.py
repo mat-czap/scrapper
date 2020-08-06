@@ -4,9 +4,8 @@ from scrapper.worker.Worker import Worker
 
 class QueueConsumer:
     def __init__(self, connection, worker: Worker):
-        self._connection = connection
+        self._channel = connection.channel()
         self._worker = worker
-        self._channel = self._connection.channel()
 
     def run(self):
         self._channel.exchange_declare(exchange='logs', exchange_type='topic')
@@ -19,6 +18,5 @@ class QueueConsumer:
         self._channel.start_consuming()
 
     def _callback(self, ch, method, properties, body):
-        time.sleep(4)
         self._worker.scrap_job(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
