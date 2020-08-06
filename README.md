@@ -1,5 +1,11 @@
 # Scrapper
-docker-compose[Flask service + rabbitmq + SqlAlchemy ORM for Mysql]
+main tools:
+- Flask
+- Rabbitmq
+- SqlAlchemy
+- Mysql
+- Gunicorn
+- Docker-compose
 
 # Start
 docker-compose up
