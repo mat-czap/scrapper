@@ -1,4 +1,4 @@
-# scrapper
+# Scrapper
 docker-compose[Flask service + rabbitmq + SqlAlchemy ORM for Mysql]
 
 # Start
