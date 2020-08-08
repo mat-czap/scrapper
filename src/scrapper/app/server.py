@@ -12,10 +12,10 @@ def create_app():
     """Initialize the core application."""
 
     app = Flask(__name__, instance_relative_config=False)
-
     metrics.init_app(app)
     metrics.info('app_info', 'Application info', version='1.0.3')
     app.config.from_envvar('APP_MODE')
+    app.debug = False
 
     connection = rabbit_connection_factory(app.config.get("RABBITMQ_URL"))
     channel = connection.channel()

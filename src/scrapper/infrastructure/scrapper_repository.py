@@ -29,7 +29,8 @@ class ScrapperRepository:
             self._session.rollback()
             self._session.flush()
             raise EncodedError
-    # extra status
+    # extra status: started, progressing, failed, completed
+
     def update_batch_status(self, batch_id: int):
         retrieved_batch = self._session.query(Batch).filter(Batch.id == batch_id).first()
         retrieved_batch.status = StatusPackage.FINISHED

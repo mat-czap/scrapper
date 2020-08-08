@@ -1,19 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
-from scrapper.worker.Worker import ScrappedData
+from scrapper.worker.worker import ScrappedData, EncodedData
 
 
 class StatusCode500Error(Exception):
     pass
 
 
-def strategy_1(url: str) -> ScrappedData:
-    if "http://" not in url:
-        url = "http://" + url
+def strategy_1(data: EncodedData) -> ScrappedData:
+    if "http://" not in data.url:
+        data.url = "http://" + data.url
 
     content = str()
     try:
-        content = requests.get(str(url))
+        content = requests.get(str(data.url))
         if content.status_code >= 500:
             raise StatusCode500Error
 
@@ -21,15 +21,14 @@ def strategy_1(url: str) -> ScrappedData:
         print("500 error")
 
     soup = BeautifulSoup(content.text, 'html.parser')
-    # how to improve line below?
-    scrapped_links: ScrappedData = ScrappedData(str(), set())
+    scrapped_links: ScrappedData = ScrappedData(data)
     try:
         for link in soup.find_all('a'):
             if link is not None:
-                scrapped_links.data.add(link.get('href'))
+                scrapped_links.links.add(link.get('href'))
             else:
                 continue
-        scrapped_links.status = "ok"
+        scrapped_links.scrapped_status = True
     except Exception as ex:
         print(ex)
     return scrapped_links

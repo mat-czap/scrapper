@@ -1,5 +1,5 @@
 import time
-from scrapper.worker.Worker import Worker
+from scrapper.worker.worker import Worker
 
 
 class QueueConsumer:
